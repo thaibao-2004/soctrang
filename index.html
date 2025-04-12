@@ -1,0 +1,3205 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/leaflet-search.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>chua khơmer soc trang</title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-search.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/lopvung_1.js"></script>
+        <script src="data/lopduong_2.js"></script>
+        <script src="data/lopsong_3.js"></script>
+        <script src="data/cchuyn_4.js"></script>
+        <script src="data/cchtuicha_5.js"></script>
+        <script src="data/phnhng_6.js"></script>
+        <script src="data/tncha_7.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:false, maxZoom:28, minZoom:1
+        }).fitBounds([[9.362013114106185,105.35499435162201],[10.034609950233564,106.65844606566277]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        // remove popup's row if "visible-with-data"
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        // add class to format popup if it contains media
+		function addClassToPopupIfMedia(content, popup) {
+			var tempDiv = document.createElement('div');
+			tempDiv.innerHTML = content;
+			if (tempDiv.querySelector('td img')) {
+				popup._contentNode.classList.add('media');
+					// Delay to force the redraw
+					setTimeout(function() {
+						popup.update();
+					}, 10);
+			} else {
+				popup._contentNode.classList.remove('media');
+			}
+		}
+        var title = new L.Control({'position':'topright'});
+        title.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+        title.update = function () {
+            this._div.innerHTML = '<h2>chua khơmer soc trang</h2>';
+        };
+        title.addTo(map);
+        var abstract = new L.Control({'position':'bottomright'});
+        abstract.onAdd = function (map) {
+            this._div = L.DomUtil.create('div',
+            'leaflet-control abstract');
+            this._div.id = 'abstract'
+
+                abstract.show();
+                return this._div;
+            };
+            abstract.show = function () {
+                this._div.classList.remove("abstract");
+                this._div.classList.add("abstractUncollapsed");
+                this._div.innerHTML = 'This is the web map desinged in March 2025 to show the Age and Classification of Khmer pagadas in Soc Trang Province, Vietnam';
+        };
+        abstract.addTo(map);
+        var zoomControl = L.control.zoom({
+            position: 'topleft'
+        }).addTo(map);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_GoogleSatellite_0');
+        map.getPane('pane_GoogleSatellite_0').style.zIndex = 400;
+        var layer_GoogleSatellite_0 = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            pane: 'pane_GoogleSatellite_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.google.at/permissions/geoguidelines/attr-guide.html">Map data ©2015 Google</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 20
+        });
+        layer_GoogleSatellite_0;
+        map.addLayer(layer_GoogleSatellite_0);
+        function pop_lopvung_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['tên'] !== null ? autolinker.link(String(feature.properties['tên']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['x'] !== null ? autolinker.link(String(feature.properties['x']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['y'] !== null ? autolinker.link(String(feature.properties['y']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_lopvung_1_0(feature) {
+            switch(String(feature.properties['tên'])) {
+                case 'Cù Lao Dung':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,19,234,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Kế Sách':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(180,97,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Long Phú':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,235,89,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mỹ Tú':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(237,174,98,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Mỹ Xuyên':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(38,238,231,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Ngã Năm':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,22,156,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thanh Trị':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(23,211,92,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'TX Sóc Trăng':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,143,148,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Vĩnh Châu':
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(136,178,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                default:
+                    return {
+                pane: 'pane_lopvung_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,211,25,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_lopvung_1');
+        map.getPane('pane_lopvung_1').style.zIndex = 401;
+        map.getPane('pane_lopvung_1').style['mix-blend-mode'] = 'normal';
+        var layer_lopvung_1 = new L.geoJson(json_lopvung_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_lopvung_1',
+            layerName: 'layer_lopvung_1',
+            pane: 'pane_lopvung_1',
+            onEachFeature: pop_lopvung_1,
+            style: style_lopvung_1_0,
+        });
+        bounds_group.addLayer(layer_lopvung_1);
+        map.addLayer(layer_lopvung_1);
+        function pop_lopduong_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['tên'] !== null ? autolinker.link(String(feature.properties['tên']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_lopduong_2_0() {
+            return {
+                pane: 'pane_lopduong_2',
+                opacity: 1,
+                color: 'rgba(0,0,0,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_lopduong_2');
+        map.getPane('pane_lopduong_2').style.zIndex = 402;
+        map.getPane('pane_lopduong_2').style['mix-blend-mode'] = 'normal';
+        var layer_lopduong_2 = new L.geoJson(json_lopduong_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_lopduong_2',
+            layerName: 'layer_lopduong_2',
+            pane: 'pane_lopduong_2',
+            onEachFeature: pop_lopduong_2,
+            style: style_lopduong_2_0,
+        });
+        bounds_group.addLayer(layer_lopduong_2);
+        map.addLayer(layer_lopduong_2);
+        function pop_lopsong_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['id'] !== null ? autolinker.link(String(feature.properties['id']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_lopsong_3_0() {
+            return {
+                pane: 'pane_lopsong_3',
+                opacity: 1,
+                color: 'rgba(28,100,255,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 2.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_lopsong_3');
+        map.getPane('pane_lopsong_3').style.zIndex = 403;
+        map.getPane('pane_lopsong_3').style['mix-blend-mode'] = 'normal';
+        var layer_lopsong_3 = new L.geoJson(json_lopsong_3, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_lopsong_3',
+            layerName: 'layer_lopsong_3',
+            pane: 'pane_lopsong_3',
+            onEachFeature: pop_lopsong_3,
+            style: style_lopsong_3_0,
+        });
+        bounds_group.addLayer(layer_lopsong_3);
+        map.addLayer(layer_lopsong_3);
+        function pop_cchuyn_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Các huyện</th>\
+                        <td>' + (feature.properties['Huyện/Th'] !== null ? autolinker.link(String(feature.properties['Huyện/Th']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">tuổi</th>\
+                        <td>' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">cách tuổi chùa</th>\
+                        <td>' + (feature.properties['filed'] !== null ? autolinker.link(String(feature.properties['filed']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">phân hạng</th>\
+                        <td>' + (feature.properties['phân hạ'] !== null ? autolinker.link(String(feature.properties['phân hạ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_cchuyn_4_0(feature) {
+            switch(String(feature.properties['Huyện/Th'])) {
+                case 'Huyện Châu Thành':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(170,116,235,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Cù Lao Dung':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(75,235,69,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Kế Sách':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(224,173,128,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Long Phú':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,121,125,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Mỹ Tú':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,84,158,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Mỹ Xuyên':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(39,218,123,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Ngã Năm':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(179,225,127,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Thanh Trị':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(24,133,228,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Huyện Trần Đề':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(126,131,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thành phố Sóc Trăng':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(198,123,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Thị xã Vĩnh Châu':
+                    return {
+                pane: 'pane_cchuyn_4',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,202,67,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_cchuyn_4');
+        map.getPane('pane_cchuyn_4').style.zIndex = 404;
+        map.getPane('pane_cchuyn_4').style['mix-blend-mode'] = 'normal';
+        var layer_cchuyn_4 = new L.geoJson(json_cchuyn_4, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_cchuyn_4',
+            layerName: 'layer_cchuyn_4',
+            pane: 'pane_cchuyn_4',
+            onEachFeature: pop_cchuyn_4,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_cchuyn_4_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_cchuyn_4);
+        map.addLayer(layer_cchuyn_4);
+        function pop_cchtuicha_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Các huyện</th>\
+                        <td>' + (feature.properties['Huyện/Th'] !== null ? autolinker.link(String(feature.properties['Huyện/Th']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">tuổi</th>\
+                        <td>' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">cách tuổi chùa</th>\
+                        <td>' + (feature.properties['filed'] !== null ? autolinker.link(String(feature.properties['filed']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">phân hạng</th>\
+                        <td>' + (feature.properties['phân hạ'] !== null ? autolinker.link(String(feature.properties['phân hạ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_cchtuicha_5_0(feature) {
+            switch(String(feature.properties['filed'])) {
+                case '>500':
+                    return {
+                pane: 'pane_cchtuicha_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,19,59,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '100-300':
+                    return {
+                pane: 'pane_cchtuicha_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(21,230,185,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '300-500':
+                    return {
+                pane: 'pane_cchtuicha_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,184,102,1.0)',
+                interactive: true,
+            }
+                    break;
+                case '50-100':
+                    return {
+                pane: 'pane_cchtuicha_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(105,236,66,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Nhỏ hơn 50':
+                    return {
+                pane: 'pane_cchtuicha_5',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(178,93,201,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_cchtuicha_5');
+        map.getPane('pane_cchtuicha_5').style.zIndex = 405;
+        map.getPane('pane_cchtuicha_5').style['mix-blend-mode'] = 'normal';
+        var layer_cchtuicha_5 = new L.geoJson(json_cchtuicha_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_cchtuicha_5',
+            layerName: 'layer_cchtuicha_5',
+            pane: 'pane_cchtuicha_5',
+            onEachFeature: pop_cchtuicha_5,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_cchtuicha_5_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_cchtuicha_5);
+        map.addLayer(layer_cchtuicha_5);
+        function pop_phnhng_6(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">Các huyện</th>\
+                        <td>' + (feature.properties['Huyện/Th'] !== null ? autolinker.link(String(feature.properties['Huyện/Th']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">tuổi</th>\
+                        <td>' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">cách tuổi chùa</th>\
+                        <td>' + (feature.properties['filed'] !== null ? autolinker.link(String(feature.properties['filed']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">phân hạng</th>\
+                        <td>' + (feature.properties['phân hạ'] !== null ? autolinker.link(String(feature.properties['phân hạ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_phnhng_6_0(feature) {
+            switch(String(feature.properties['phân hạ'])) {
+                case 'cấp quốc gia':
+                    return {
+                pane: 'pane_phnhng_6',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,237,141,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'cấp tỉnh':
+                    return {
+                pane: 'pane_phnhng_6',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,48,53,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'không':
+                    return {
+                pane: 'pane_phnhng_6',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(28,103,207,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_phnhng_6');
+        map.getPane('pane_phnhng_6').style.zIndex = 406;
+        map.getPane('pane_phnhng_6').style['mix-blend-mode'] = 'normal';
+        var layer_phnhng_6 = new L.geoJson(json_phnhng_6, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_phnhng_6',
+            layerName: 'layer_phnhng_6',
+            pane: 'pane_phnhng_6',
+            onEachFeature: pop_phnhng_6,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_phnhng_6_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_phnhng_6);
+        map.addLayer(layer_phnhng_6);
+        function pop_tncha_7(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['Tên Chùa'] !== null ? autolinker.link(String(feature.properties['Tên Chùa']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Các huyện</th>\
+                        <td>' + (feature.properties['Huyện/Th'] !== null ? autolinker.link(String(feature.properties['Huyện/Th']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">tuổi</th>\
+                        <td>' + (feature.properties['old'] !== null ? autolinker.link(String(feature.properties['old']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">cách tuổi chùa</th>\
+                        <td>' + (feature.properties['filed'] !== null ? autolinker.link(String(feature.properties['filed']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">phân hạng</th>\
+                        <td>' + (feature.properties['phân hạ'] !== null ? autolinker.link(String(feature.properties['phân hạ']).replace(/'/g, '\'').toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            var content = removeEmptyRowsFromPopupContent(popupContent, feature);
+			layer.on('popupopen', function(e) {
+				addClassToPopupIfMedia(content, e.popup);
+			});
+			layer.bindPopup(content, { maxHeight: 400 });
+        }
+
+        function style_tncha_7_0(feature) {
+            switch(String(feature.properties['Tên Chùa'])) {
+                case 'Chùa AmPôVon Soài Côn':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(30,214,122,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Anh Tà Kôsây Kom Pong Tà Anh':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(14,233,200,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Bô Tum Rengxây Tum Núp':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,38,63,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Bồ Tum Sa Kô Bâng Phniêt':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,130,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Bồtum Salavol Ộsthdel Tum Pok Sok':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(204,172,13,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Bồtum Vongsa Som Rông':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,226,79,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa BôTumSakô Sêrey PhnôPôl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,231,110,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Buôl Mum Prochum Melchây Thnol Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(71,216,229,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Can Đa Sô Phon Prêk On Đơk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(209,54,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Chăm Pa Vanhna Ram':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(37,201,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Chat Tu Muk Kha Rat Ta Na Ram Pem Buôl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(152,231,95,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa ChhatTaVon Tăng Du':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(31,223,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Compong Mengchay Tứkpray':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,121,106,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Hluông Ba Sắc Bai Chhau':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(75,206,19,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Khleáng':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(51,220,96,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Kom Pong melchây Sêrây Utđom Pong Tưk Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(59,141,234,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Kom Pung Menchây Sêrây Utđom Prêk Om Pu':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(129,213,157,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Kompongmenchây Sêrey Prolean':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(142,239,236,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Kompung Melchây Sêrây Utđom Kom Pong Pro Tel':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(194,213,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Leskhanắsvong Chhung Thum':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(236,186,140,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Maech Chhưm Meram Chrôi Tim Chăs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(70,43,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Mengkol Thếp Pađây Bưng CroChápChắs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(131,212,118,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Môni SathaRam ĐôlTru':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(79,216,179,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Môni Sôphon Pong Tưk Chăs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(72,119,205,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Môni Sră Keo':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(227,72,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Môni Vongsa Prêk Tà Cuôl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(239,68,103,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa MôniSakô ĐơmomPil':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(154,35,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa MônivongSa Sêrey vong ThomMaChô':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(95,25,200,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Muni Vongsa Ram Phnô Tà Niêl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(199,211,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Nô Rên Rengxây Ong Kho':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(107,163,215,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa ÔChum Maram Prêk Chêk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(118,187,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Om Pes Vanhnaram Đay Tà Suôs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,32,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pấp Pe Vanhnaram Prêk Pinh Tôn':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(105,230,32,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa PíchMenKôl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(37,89,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pô Thi Khsách':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(105,220,130,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pô Thi Sáth Chrôi Tưm Kal Đal':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(219,134,113,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pô Thi Satha Ram':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,76,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pô Thi Thlâng':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(92,180,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pô Thi Thum Phđau Pênh':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(205,41,46,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Ponhlư Pô Thi Onhđét Phđốt':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,102,233,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pôthi Kumphi Sakô Đon Ka Đôn':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,214,44,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pôthimengkôl Sêrey TaTeo':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,168,110,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pra Sath Kong':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(157,82,227,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pres Buôl Pres Phek':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,152,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pring Prum Monkol Om Pôp':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(213,62,127,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pro Chum Đel melchây Ong Tao':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,208,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pro Chum Melchây Sêrây Chông Prêk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,121,147,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pro Chum Vong Prêk Chac':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,216,129,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Pro Lean Melchây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(214,65,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Prum Vi Sal':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,231,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Puth Rengxây Bâng Kok':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(153,40,218,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Ríchthimônisakô ĐơmThnốt':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,196,110,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Rothtanas Môni Đay Niêl':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,88,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa SalaPôthi Sêrey Sakô (Wáth Thmây)':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(176,70,211,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Saravol ÔTedenh SuaSđây Bưng Kol':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(112,107,200,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Bôpha Chăm Pa Chum':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(87,197,214,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Chum Bâng Tôl Sa':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,167,39,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Môni Vong Peng Som Rách':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(121,213,35,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Muni SăngKes':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(35,150,232,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Nôcô Chum Om Pu Diar':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(226,202,22,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Pem Buôl Chăs (Srăs Sriêng)':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,47,203,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Phnô Rô Ka':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(86,117,216,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Pô Thi Đơm Pô':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(193,220,104,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Pô Thi Prưk Tà Ong':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(221,15,190,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Pôthiwel Pô Pus Tưk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(92,202,84,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Prochum Vong Pem Buôl Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(240,76,21,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Prochum vong Trà Quít Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(104,201,180,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Sóckhum SongKum melchây Sro Lôn':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(235,193,87,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Ta Mơn':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(138,208,33,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Têchô Ma Ha Túp':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(132,203,226,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Utđom Đay Om Pu':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(83,139,223,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Utđom Phnô Kom Bôth':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,127,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Utđom Pô Thi Chum':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(225,40,163,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrây Vong Phnô Canh Chơ Chăs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(95,230,65,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey Cro Săng':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(150,205,48,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey KanDal':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(210,59,224,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey ProchumBunh Sôvanhsakô ĐayTaPai':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(215,57,173,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey ProChumvongPres Kanđal TứkSap':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(41,225,112,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey Rotanắsvong Bâng Tung':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(220,51,144,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey Sakô Phnôthum':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(116,232,168,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey TaĐớk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(127,218,126,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sêrey TaSếk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(238,131,69,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sôphol Rengsây Bưng CroCháp Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(102,61,239,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Sôs Thom Me Wach Tây Àrâyda Kom Pong Tróp':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(16,16,220,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Srăs Sron Kompung Melchây Đay Chhơ Khmau':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(207,28,192,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Tak Khi Na Von Pô Thi Prưk':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(218,108,222,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Tếp Pia Ram PrâyChop':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(139,233,148,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Utđom Môni Phnô Canh Chơ Thmây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(238,144,72,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Vi Thde Ram Trà Quít Chăs':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(49,217,152,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Wiêl Lvon Naram On Đôn Rưs Sây':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(81,95,204,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Chùa Wis Thde Ponhnaram Bâng Kha Don':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(123,220,137,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN CHÂU THÀNH':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(106,13,219,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN CÙ LAO DUNG':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(48,27,209,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN KẾ SÁCH':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(101,61,202,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN LONG PHÚ':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(63,204,143,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN MỸ TÚ':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(196,120,208,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN MỸ XUYÊN':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(202,144,74,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN NGÃ NĂM':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(229,82,121,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN THẠNH TRỊ':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(216,100,170,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'HUYỆN TRẦN ĐỀ':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(214,46,30,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'Sôvanh Kongke Muni Kos Tung':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(173,222,57,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'THÀNH PHỐ SÓC TRĂNG':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(95,214,99,1.0)',
+                interactive: true,
+            }
+                    break;
+                case 'THỊ XÃ VĨNH CHÂU':
+                    return {
+                pane: 'pane_tncha_7',
+                radius: 4.0,
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(182,46,216,1.0)',
+                interactive: true,
+            }
+                    break;
+            }
+        }
+        map.createPane('pane_tncha_7');
+        map.getPane('pane_tncha_7').style.zIndex = 407;
+        map.getPane('pane_tncha_7').style['mix-blend-mode'] = 'normal';
+        var layer_tncha_7 = new L.geoJson(json_tncha_7, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_tncha_7',
+            layerName: 'layer_tncha_7',
+            pane: 'pane_tncha_7',
+            onEachFeature: pop_tncha_7,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.circleMarker(latlng, style_tncha_7_0(feature));
+            },
+        });
+        bounds_group.addLayer(layer_tncha_7);
+        map.addLayer(layer_tncha_7);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        var overlaysTree = [
+            {label: 'tên chùa<br /><table><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaAmPôVonSoàiCôn0.png" /></td><td>Chùa AmPôVon Soài Côn</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaAnhTàKôsâyKomPongTàAnh1.png" /></td><td>Chùa Anh Tà Kôsây Kom Pong Tà Anh</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBôTumRengxâyTumNúp2.png" /></td><td>Chùa Bô Tum Rengxây Tum Núp</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBồTumSaKôBângPhniêt3.png" /></td><td>Chùa Bồ Tum Sa Kô Bâng Phniêt</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBồtumSalavolỘsthdelTumPokSok4.png" /></td><td>Chùa Bồtum Salavol Ộsthdel Tum Pok Sok</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBồtumVongsaSomRông5.png" /></td><td>Chùa Bồtum Vongsa Som Rông</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBôTumSakôSêreyPhnôPôl6.png" /></td><td>Chùa BôTumSakô Sêrey PhnôPôl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaBuôlMumProchumMelchâyThnolThmây7.png" /></td><td>Chùa Buôl Mum Prochum Melchây Thnol Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaCanĐaSôPhonPrêkOnĐơk8.png" /></td><td>Chùa Can Đa Sô Phon Prêk On Đơk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaChămPaVanhnaRam9.png" /></td><td>Chùa Chăm Pa Vanhna Ram</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaChatTuMukKhaRatTaNaRamPemBuôl10.png" /></td><td>Chùa Chat Tu Muk Kha Rat Ta Na Ram Pem Buôl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaChhatTaVonTăngDu11.png" /></td><td>Chùa ChhatTaVon Tăng Du</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaCompongMengchayTứkpray12.png" /></td><td>Chùa Compong Mengchay Tứkpray</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaHluôngBaSắcBaiChhau13.png" /></td><td>Chùa Hluông Ba Sắc Bai Chhau</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaKhleáng14.png" /></td><td>Chùa Khleáng</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaKomPongmelchâySêrâyUtđomPongTưkThmây15.png" /></td><td>Chùa Kom Pong melchây Sêrây Utđom Pong Tưk Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaKomPungMenchâySêrâyUtđomPrêkOmPu16.png" /></td><td>Chùa Kom Pung Menchây Sêrây Utđom Prêk Om Pu</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaKompongmenchâySêreyProlean17.png" /></td><td>Chùa Kompongmenchây Sêrey Prolean</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaKompungMelchâySêrâyUtđomKomPongProTel18.png" /></td><td>Chùa Kompung Melchây Sêrây Utđom Kom Pong Pro Tel</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaLeskhanắsvongChhungThum19.png" /></td><td>Chùa Leskhanắsvong Chhung Thum</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMaechChhưmMeramChrôiTimChăs20.png" /></td><td>Chùa Maech Chhưm Meram Chrôi Tim Chăs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMengkolThếpPađâyBưngCroChápChắs21.png" /></td><td>Chùa Mengkol Thếp Pađây Bưng CroChápChắs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMôniSathaRamĐôlTru22.png" /></td><td>Chùa Môni SathaRam ĐôlTru</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMôniSôphonPongTưkChăs23.png" /></td><td>Chùa Môni Sôphon Pong Tưk Chăs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMôniSrăKeo24.png" /></td><td>Chùa Môni Sră Keo</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMôniVongsaPrêkTàCuôl25.png" /></td><td>Chùa Môni Vongsa Prêk Tà Cuôl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMôniSakôĐơmomPil26.png" /></td><td>Chùa MôniSakô ĐơmomPil</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMônivongSaSêreyvongThomMaChô27.png" /></td><td>Chùa MônivongSa Sêrey vong ThomMaChô</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaMuniVongsaRamPhnôTàNiêl28.png" /></td><td>Chùa Muni Vongsa Ram Phnô Tà Niêl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaNôRênRengxâyOngKho29.png" /></td><td>Chùa Nô Rên Rengxây Ong Kho</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaÔChumMaramPrêkChêk30.png" /></td><td>Chùa ÔChum Maram Prêk Chêk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaOmPesVanhnaramĐayTàSuôs31.png" /></td><td>Chùa Om Pes Vanhnaram Đay Tà Suôs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPấpPeVanhnaramPrêkPinhTôn32.png" /></td><td>Chùa Pấp Pe Vanhnaram Prêk Pinh Tôn</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPíchMenKôl33.png" /></td><td>Chùa PíchMenKôl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôThiKhsách34.png" /></td><td>Chùa Pô Thi Khsách</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôThiSáthChrôiTưmKalĐal35.png" /></td><td>Chùa Pô Thi Sáth Chrôi Tưm Kal Đal</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôThiSathaRam36.png" /></td><td>Chùa Pô Thi Satha Ram</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôThiThlâng37.png" /></td><td>Chùa Pô Thi Thlâng</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôThiThumPhđauPênh38.png" /></td><td>Chùa Pô Thi Thum Phđau Pênh</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPonhlưPôThiOnhđétPhđốt39.png" /></td><td>Chùa Ponhlư Pô Thi Onhđét Phđốt</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôthiKumphiSakôĐonKaĐôn40.png" /></td><td>Chùa Pôthi Kumphi Sakô Đon Ka Đôn</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPôthimengkôlSêreyTaTeo41.png" /></td><td>Chùa Pôthimengkôl Sêrey TaTeo</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPraSathKong42.png" /></td><td>Chùa Pra Sath Kong</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPresBuôlPresPhek43.png" /></td><td>Chùa Pres Buôl Pres Phek</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPringPrumMonkolOmPôp44.png" /></td><td>Chùa Pring Prum Monkol Om Pôp</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaProChumĐelmelchâyOngTao45.png" /></td><td>Chùa Pro Chum Đel melchây Ong Tao</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaProChumMelchâySêrâyChôngPrêk46.png" /></td><td>Chùa Pro Chum Melchây Sêrây Chông Prêk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaProChumVongPrêkChac47.png" /></td><td>Chùa Pro Chum Vong Prêk Chac</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaProLeanMelchây48.png" /></td><td>Chùa Pro Lean Melchây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPrumViSal49.png" /></td><td>Chùa Prum Vi Sal</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaPuthRengxâyBângKok50.png" /></td><td>Chùa Puth Rengxây Bâng Kok</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaRíchthimônisakôĐơmThnốt51.png" /></td><td>Chùa Ríchthimônisakô ĐơmThnốt</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaRothtanasMôniĐayNiêl52.png" /></td><td>Chùa Rothtanas Môni Đay Niêl</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSalaPôthiSêreySakôWáthThmây53.png" /></td><td>Chùa SalaPôthi Sêrey Sakô (Wáth Thmây)</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSaravolÔTedenhSuaSđâyBưngKol54.png" /></td><td>Chùa Saravol ÔTedenh SuaSđây Bưng Kol</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyBôphaChămPaChum55.png" /></td><td>Chùa Sêrây Bôpha Chăm Pa Chum</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyChumBângTôlSa56.png" /></td><td>Chùa Sêrây Chum Bâng Tôl Sa</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyMôniVongPengSomRách57.png" /></td><td>Chùa Sêrây Môni Vong Peng Som Rách</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyMuniSăngKes58.png" /></td><td>Chùa Sêrây Muni SăngKes</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyNôcôChumOmPuDiar59.png" /></td><td>Chùa Sêrây Nôcô Chum Om Pu Diar</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyPemBuôlChăsSrăsSriêng60.png" /></td><td>Chùa Sêrây Pem Buôl Chăs (Srăs Sriêng)</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyPhnôRôKa61.png" /></td><td>Chùa Sêrây Phnô Rô Ka</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyPôThiĐơmPô62.png" /></td><td>Chùa Sêrây Pô Thi Đơm Pô</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyPôThiPrưkTàOng63.png" /></td><td>Chùa Sêrây Pô Thi Prưk Tà Ong</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyPôthiwelPôPusTưk64.png" /></td><td>Chùa Sêrây Pôthiwel Pô Pus Tưk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyProchumVongPemBuôlThmây65.png" /></td><td>Chùa Sêrây Prochum Vong Pem Buôl Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyProchumvongTràQuítThmây66.png" /></td><td>Chùa Sêrây Prochum vong Trà Quít Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâySóckhumSongKummelchâySroLôn67.png" /></td><td>Chùa Sêrây Sóckhum SongKum melchây Sro Lôn</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyTaMơn68.png" /></td><td>Chùa Sêrây Ta Mơn</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyTêchôMaHaTúp69.png" /></td><td>Chùa Sêrây Têchô Ma Ha Túp</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyUtđomĐayOmPu70.png" /></td><td>Chùa Sêrây Utđom Đay Om Pu</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyUtđomPhnôKomBôth71.png" /></td><td>Chùa Sêrây Utđom Phnô Kom Bôth</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyUtđomPôThiChum72.png" /></td><td>Chùa Sêrây Utđom Pô Thi Chum</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêrâyVongPhnôCanhChơChăs73.png" /></td><td>Chùa Sêrây Vong Phnô Canh Chơ Chăs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyCroSăng74.png" /></td><td>Chùa Sêrey Cro Săng</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyKanDal75.png" /></td><td>Chùa Sêrey KanDal</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyProchumBunhSôvanhsakôĐayTaPai76.png" /></td><td>Chùa Sêrey ProchumBunh Sôvanhsakô ĐayTaPai</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyProChumvongPresKanđalTứkSap77.png" /></td><td>Chùa Sêrey ProChumvongPres Kanđal TứkSap</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyRotanắsvongBângTung78.png" /></td><td>Chùa Sêrey Rotanắsvong Bâng Tung</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreySakôPhnôthum79.png" /></td><td>Chùa Sêrey Sakô Phnôthum</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyTaĐớk80.png" /></td><td>Chùa Sêrey TaĐớk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSêreyTaSếk81.png" /></td><td>Chùa Sêrey TaSếk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSôpholRengsâyBưngCroChápThmây82.png" /></td><td>Chùa Sôphol Rengsây Bưng CroCháp Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSôsThomMeWachTâyÀrâydaKomPongTróp83.png" /></td><td>Chùa Sôs Thom Me Wach Tây Àrâyda Kom Pong Tróp</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaSrăsSronKompungMelchâyĐayChhơKhmau84.png" /></td><td>Chùa Srăs Sron Kompung Melchây Đay Chhơ Khmau</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaTakKhiNaVonPôThiPrưk85.png" /></td><td>Chùa Tak Khi Na Von Pô Thi Prưk</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaTếpPiaRamPrâyChop86.png" /></td><td>Chùa Tếp Pia Ram PrâyChop</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaUtđomMôniPhnôCanhChơThmây87.png" /></td><td>Chùa Utđom Môni Phnô Canh Chơ Thmây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaViThdeRamTràQuítChăs88.png" /></td><td>Chùa Vi Thde Ram Trà Quít Chăs</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaWiêlLvonNaramOnĐônRưsSây89.png" /></td><td>Chùa Wiêl Lvon Naram On Đôn Rưs Sây</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_ChùaWisThdePonhnaramBângKhaDon90.png" /></td><td>Chùa Wis Thde Ponhnaram Bâng Kha Don</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNCHÂUTHÀNH91.png" /></td><td>HUYỆN CHÂU THÀNH</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNCÙLAODUNG92.png" /></td><td>HUYỆN CÙ LAO DUNG</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNKẾSÁCH93.png" /></td><td>HUYỆN KẾ SÁCH</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNLONGPHÚ94.png" /></td><td>HUYỆN LONG PHÚ</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNMỸTÚ95.png" /></td><td>HUYỆN MỸ TÚ</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNMỸXUYÊN96.png" /></td><td>HUYỆN MỸ XUYÊN</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNNGÃNĂM97.png" /></td><td>HUYỆN NGÃ NĂM</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNTHẠNHTRỊ98.png" /></td><td>HUYỆN THẠNH TRỊ</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_HUYỆNTRẦNĐỀ99.png" /></td><td>HUYỆN TRẦN ĐỀ</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_SôvanhKongkeMuniKosTung100.png" /></td><td>Sôvanh Kongke Muni Kos Tung</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_THÀNHPHỐSÓCTRĂNG101.png" /></td><td>THÀNH PHỐ SÓC TRĂNG</td></tr><tr><td style="text-align: center;"><img src="legend/tncha_7_THỊXÃVĨNHCHÂU102.png" /></td><td>THỊ XÃ VĨNH CHÂU</td></tr></table>', layer: layer_tncha_7},
+            {label: 'phân hạng<br /><table><tr><td style="text-align: center;"><img src="legend/phnhng_6_cấpquốcgia0.png" /></td><td>cấp quốc gia</td></tr><tr><td style="text-align: center;"><img src="legend/phnhng_6_cấptỉnh1.png" /></td><td>cấp tỉnh</td></tr><tr><td style="text-align: center;"><img src="legend/phnhng_6_không2.png" /></td><td>không</td></tr></table>', layer: layer_phnhng_6},
+            {label: 'cách tuổi chùa<br /><table><tr><td style="text-align: center;"><img src="legend/cchtuicha_5_5000.png" /></td><td>>500</td></tr><tr><td style="text-align: center;"><img src="legend/cchtuicha_5_1003001.png" /></td><td>100-300</td></tr><tr><td style="text-align: center;"><img src="legend/cchtuicha_5_3005002.png" /></td><td>300-500</td></tr><tr><td style="text-align: center;"><img src="legend/cchtuicha_5_501003.png" /></td><td>50-100</td></tr><tr><td style="text-align: center;"><img src="legend/cchtuicha_5_Nhỏhơn504.png" /></td><td>Nhỏ hơn 50</td></tr></table>', layer: layer_cchtuicha_5},
+            {label: 'các huyên<br /><table><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnChâuThành0.png" /></td><td>Huyện Châu Thành</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnCùLaoDung1.png" /></td><td>Huyện Cù Lao Dung</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnKếSách2.png" /></td><td>Huyện Kế Sách</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnLongPhú3.png" /></td><td>Huyện Long Phú</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnMỹTú4.png" /></td><td>Huyện Mỹ Tú</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnMỹXuyên5.png" /></td><td>Huyện Mỹ Xuyên</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnNgãNăm6.png" /></td><td>Huyện Ngã Năm</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnThanhTrị7.png" /></td><td>Huyện Thanh Trị</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_HuyệnTrầnĐề8.png" /></td><td>Huyện Trần Đề</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_ThànhphốSócTrăng9.png" /></td><td>Thành phố Sóc Trăng</td></tr><tr><td style="text-align: center;"><img src="legend/cchuyn_4_ThịxãVĩnhChâu10.png" /></td><td>Thị xã Vĩnh Châu</td></tr></table>', layer: layer_cchuyn_4},
+            {label: '<img src="legend/lopsong_3.png" /> lopsong', layer: layer_lopsong_3},
+            {label: '<img src="legend/lopduong_2.png" /> lopduong', layer: layer_lopduong_2},
+            {label: 'lopvung<br /><table><tr><td style="text-align: center;"><img src="legend/lopvung_1_CùLaoDung0.png" /></td><td>Cù Lao Dung</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_KếSách1.png" /></td><td>Kế Sách</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_LongPhú2.png" /></td><td>Long Phú</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_MỹTú3.png" /></td><td>Mỹ Tú</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_MỹXuyên4.png" /></td><td>Mỹ Xuyên</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_NgãNăm5.png" /></td><td>Ngã Năm</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_ThanhTrị6.png" /></td><td>Thanh Trị</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_TXSócTrăng7.png" /></td><td>TX Sóc Trăng</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_VĩnhChâu8.png" /></td><td>Vĩnh Châu</td></tr><tr><td style="text-align: center;"><img src="legend/lopvung_1_9.png" /></td><td></td></tr></table>', layer: layer_lopvung_1},
+            {label: "Google Satellite", layer: layer_GoogleSatellite_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_tncha_7,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'filed'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"id": "int","old": "int","phân hạ": "str","Huyện/Th": "str","tên": "str","filed": "str","Tên Chùa": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_id = document.createElement("div");
+            div_id.id = "div_id";
+            div_id.className = "slider";
+            document.getElementById("menu").appendChild(div_id);
+            var lab_id = document.createElement('div');
+            lab_id.innerHTML  = 'id: <span id="val_id"></span>';
+            lab_id.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_id);
+            var reset_id = document.createElement('div');
+            reset_id.innerHTML = 'clear filter';
+            reset_id.className = 'filterlabel';
+            lab_id.className = 'filterlabel';
+            reset_id.onclick = function() {
+                sel_id.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_id);
+            var sel_id = document.getElementById('div_id');
+            noUiSlider.create(sel_id, {
+                connect: true,
+                start: [1, 9],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: 1,
+                max: 9
+                }
+            });
+            sel_id.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_id = document.getElementById('val_id');
+            val_id.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_old = document.createElement("div");
+            div_old.id = "div_old";
+            div_old.className = "slider";
+            document.getElementById("menu").appendChild(div_old);
+            var lab_old = document.createElement('div');
+            lab_old.innerHTML  = 'old: <span id="val_old"></span>';
+            lab_old.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_old);
+            var reset_old = document.createElement('div');
+            reset_old.innerHTML = 'clear filter';
+            reset_old.className = 'filterlabel';
+            lab_old.className = 'filterlabel';
+            reset_old.onclick = function() {
+                sel_old.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_old);
+            var sel_old = document.getElementById('div_old');
+            noUiSlider.create(sel_old, {
+                connect: true,
+                start: [21, 801],
+                step: 1,
+                format: wNumb({
+                    decimals: 0,
+                    }),
+                range: {
+                min: 21,
+                max: 801
+                }
+            });
+            sel_old.noUiSlider.on('update', function (values) {
+            filterVals =[];
+            for (value in values){
+            filterVals.push(parseInt(value))
+            }
+            val_old = document.getElementById('val_old');
+            val_old.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_phnh = document.createElement('div');
+            div_phnh.id = "div_phnh";
+            div_phnh.className= "filterselect";
+            document.getElementById("menu").appendChild(div_phnh);
+            sel_phnh = document.createElement('select');
+            sel_phnh.multiple = true;
+            sel_phnh.size = 4;
+            sel_phnh.id = "sel_phnh";
+            var phnh_options_str = "<option value='' unselected></option>";
+            sel_phnh.onchange = function(){filterFunc()};
+            phnh_options_str  += '<option value="NULL">NULL</option>';
+            phnh_options_str  += '<option value="cấp quốc gia">cấp quốc gia</option>';
+            phnh_options_str  += '<option value="cấp tỉnh">cấp tỉnh</option>';
+            phnh_options_str  += '<option value="không">không</option>';
+            sel_phnh.innerHTML = phnh_options_str;
+            div_phnh.appendChild(sel_phnh);
+            var lab_phnh = document.createElement('div');
+            lab_phnh.innerHTML = 'phân hạ';
+            lab_phnh.className = 'filterlabel';
+            div_phnh.appendChild(lab_phnh);
+            var reset_phnh = document.createElement('div');
+            reset_phnh.innerHTML = 'clear filter';
+            reset_phnh.className = 'filterlabel';
+            reset_phnh.onclick = function() {
+                var options = document.getElementById("sel_phnh").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_phnh.appendChild(reset_phnh);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_HuynTh = document.createElement('div');
+            div_HuynTh.id = "div_HuynTh";
+            div_HuynTh.className= "filterselect";
+            document.getElementById("menu").appendChild(div_HuynTh);
+            sel_HuynTh = document.createElement('select');
+            sel_HuynTh.multiple = true;
+            sel_HuynTh.size = 10;
+            sel_HuynTh.id = "sel_HuynTh";
+            var HuynTh_options_str = "<option value='' unselected></option>";
+            sel_HuynTh.onchange = function(){filterFunc()};
+            HuynTh_options_str  += '<option value="Huyện Châu Thành">Huyện Châu Thành</option>';
+            HuynTh_options_str  += '<option value="Huyện Cù Lao Dung">Huyện Cù Lao Dung</option>';
+            HuynTh_options_str  += '<option value="Huyện Kế Sách">Huyện Kế Sách</option>';
+            HuynTh_options_str  += '<option value="Huyện Long Phú">Huyện Long Phú</option>';
+            HuynTh_options_str  += '<option value="Huyện Mỹ Tú">Huyện Mỹ Tú</option>';
+            HuynTh_options_str  += '<option value="Huyện Mỹ Xuyên">Huyện Mỹ Xuyên</option>';
+            HuynTh_options_str  += '<option value="Huyện Ngã Năm">Huyện Ngã Năm</option>';
+            HuynTh_options_str  += '<option value="Huyện Thanh Trị">Huyện Thanh Trị</option>';
+            HuynTh_options_str  += '<option value="Huyện Trần Đề">Huyện Trần Đề</option>';
+            HuynTh_options_str  += '<option value="Thành phố Sóc Trăng">Thành phố Sóc Trăng</option>';
+            HuynTh_options_str  += '<option value="Thị xã Vĩnh Châu">Thị xã Vĩnh Châu</option>';
+            sel_HuynTh.innerHTML = HuynTh_options_str;
+            div_HuynTh.appendChild(sel_HuynTh);
+            var lab_HuynTh = document.createElement('div');
+            lab_HuynTh.innerHTML = 'Huyện/Th';
+            lab_HuynTh.className = 'filterlabel';
+            div_HuynTh.appendChild(lab_HuynTh);
+            var reset_HuynTh = document.createElement('div');
+            reset_HuynTh.innerHTML = 'clear filter';
+            reset_HuynTh.className = 'filterlabel';
+            reset_HuynTh.onclick = function() {
+                var options = document.getElementById("sel_HuynTh").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_HuynTh.appendChild(reset_HuynTh);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_tn = document.createElement('div');
+            div_tn.id = "div_tn";
+            div_tn.className= "filterselect";
+            document.getElementById("menu").appendChild(div_tn);
+            sel_tn = document.createElement('select');
+            sel_tn.multiple = true;
+            sel_tn.size = 10;
+            sel_tn.id = "sel_tn";
+            var tn_options_str = "<option value='' unselected></option>";
+            sel_tn.onchange = function(){filterFunc()};
+            tn_options_str  += '<option value="NULL">NULL</option>';
+            tn_options_str  += '<option value="Cù Lao Dung">Cù Lao Dung</option>';
+            tn_options_str  += '<option value="Kế Sách">Kế Sách</option>';
+            tn_options_str  += '<option value="Long Phú">Long Phú</option>';
+            tn_options_str  += '<option value="Mỹ Tú">Mỹ Tú</option>';
+            tn_options_str  += '<option value="Mỹ Xuyên">Mỹ Xuyên</option>';
+            tn_options_str  += '<option value="Ngã Năm">Ngã Năm</option>';
+            tn_options_str  += '<option value="TX Sóc Trăng">TX Sóc Trăng</option>';
+            tn_options_str  += '<option value="Thanh Trị">Thanh Trị</option>';
+            tn_options_str  += '<option value="Vĩnh Châu">Vĩnh Châu</option>';
+            tn_options_str  += '<option value="dường 1">dường 1</option>';
+            tn_options_str  += '<option value="đường 11">đường 11</option>';
+            tn_options_str  += '<option value="đường 113">đường 113</option>';
+            tn_options_str  += '<option value="đường 18">đường 18</option>';
+            tn_options_str  += '<option value="đường 42">đường 42</option>';
+            tn_options_str  += '<option value="đường 60">đường 60</option>';
+            sel_tn.innerHTML = tn_options_str;
+            div_tn.appendChild(sel_tn);
+            var lab_tn = document.createElement('div');
+            lab_tn.innerHTML = 'tên';
+            lab_tn.className = 'filterlabel';
+            div_tn.appendChild(lab_tn);
+            var reset_tn = document.createElement('div');
+            reset_tn.innerHTML = 'clear filter';
+            reset_tn.className = 'filterlabel';
+            reset_tn.onclick = function() {
+                var options = document.getElementById("sel_tn").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_tn.appendChild(reset_tn);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_filed = document.createElement('div');
+            div_filed.id = "div_filed";
+            div_filed.className= "filterselect";
+            document.getElementById("menu").appendChild(div_filed);
+            sel_filed = document.createElement('select');
+            sel_filed.multiple = true;
+            sel_filed.size = 5;
+            sel_filed.id = "sel_filed";
+            var filed_options_str = "<option value='' unselected></option>";
+            sel_filed.onchange = function(){filterFunc()};
+            filed_options_str  += '<option value="100-300">100-300</option>';
+            filed_options_str  += '<option value="300-500">300-500</option>';
+            filed_options_str  += '<option value="50-100">50-100</option>';
+            filed_options_str  += '<option value=">500">>500</option>';
+            filed_options_str  += '<option value="Nhỏ hơn 50">Nhỏ hơn 50</option>';
+            sel_filed.innerHTML = filed_options_str;
+            div_filed.appendChild(sel_filed);
+            var lab_filed = document.createElement('div');
+            lab_filed.innerHTML = 'filed';
+            lab_filed.className = 'filterlabel';
+            div_filed.appendChild(lab_filed);
+            var reset_filed = document.createElement('div');
+            reset_filed.innerHTML = 'clear filter';
+            reset_filed.className = 'filterlabel';
+            reset_filed.onclick = function() {
+                var options = document.getElementById("sel_filed").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_filed.appendChild(reset_filed);
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_TnCha = document.createElement('div');
+            div_TnCha.id = "div_TnCha";
+            div_TnCha.className= "filterselect";
+            document.getElementById("menu").appendChild(div_TnCha);
+            sel_TnCha = document.createElement('select');
+            sel_TnCha.multiple = true;
+            sel_TnCha.size = 10;
+            sel_TnCha.id = "sel_TnCha";
+            var TnCha_options_str = "<option value='' unselected></option>";
+            sel_TnCha.onchange = function(){filterFunc()};
+            TnCha_options_str  += '<option value="Chùa AmPôVon Soài Côn">Chùa AmPôVon Soài Côn</option>';
+            TnCha_options_str  += '<option value="Chùa Anh Tà Kôsây Kom Pong Tà Anh">Chùa Anh Tà Kôsây Kom Pong Tà Anh</option>';
+            TnCha_options_str  += '<option value="Chùa Buôl Mum Prochum Melchây Thnol Thmây">Chùa Buôl Mum Prochum Melchây Thnol Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Bô Tum Rengxây Tum Núp">Chùa Bô Tum Rengxây Tum Núp</option>';
+            TnCha_options_str  += '<option value="Chùa BôTumSakô Sêrey PhnôPôl">Chùa BôTumSakô Sêrey PhnôPôl</option>';
+            TnCha_options_str  += '<option value="Chùa Bồ Tum Sa Kô Bâng Phniêt">Chùa Bồ Tum Sa Kô Bâng Phniêt</option>';
+            TnCha_options_str  += '<option value="Chùa Bồtum Salavol Ộsthdel Tum Pok Sok">Chùa Bồtum Salavol Ộsthdel Tum Pok Sok</option>';
+            TnCha_options_str  += '<option value="Chùa Bồtum Vongsa Som Rông">Chùa Bồtum Vongsa Som Rông</option>';
+            TnCha_options_str  += '<option value="Chùa Can Đa Sô Phon Prêk On Đơk">Chùa Can Đa Sô Phon Prêk On Đơk</option>';
+            TnCha_options_str  += '<option value="Chùa Chat Tu Muk Kha Rat Ta Na Ram Pem Buôl">Chùa Chat Tu Muk Kha Rat Ta Na Ram Pem Buôl</option>';
+            TnCha_options_str  += '<option value="Chùa ChhatTaVon Tăng Du">Chùa ChhatTaVon Tăng Du</option>';
+            TnCha_options_str  += '<option value="Chùa Chăm Pa Vanhna Ram">Chùa Chăm Pa Vanhna Ram</option>';
+            TnCha_options_str  += '<option value="Chùa Compong Mengchay Tứkpray">Chùa Compong Mengchay Tứkpray</option>';
+            TnCha_options_str  += '<option value="Chùa Hluông Ba Sắc Bai Chhau">Chùa Hluông Ba Sắc Bai Chhau</option>';
+            TnCha_options_str  += '<option value="Chùa Khleáng">Chùa Khleáng</option>';
+            TnCha_options_str  += '<option value="Chùa Kom Pong melchây Sêrây Utđom Pong Tưk Thmây">Chùa Kom Pong melchây Sêrây Utđom Pong Tưk Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Kom Pung Menchây Sêrây Utđom Prêk Om Pu">Chùa Kom Pung Menchây Sêrây Utđom Prêk Om Pu</option>';
+            TnCha_options_str  += '<option value="Chùa Kompongmenchây Sêrey Prolean">Chùa Kompongmenchây Sêrey Prolean</option>';
+            TnCha_options_str  += '<option value="Chùa Kompung Melchây Sêrây Utđom Kom Pong Pro Tel">Chùa Kompung Melchây Sêrây Utđom Kom Pong Pro Tel</option>';
+            TnCha_options_str  += '<option value="Chùa Leskhanắsvong Chhung Thum">Chùa Leskhanắsvong Chhung Thum</option>';
+            TnCha_options_str  += '<option value="Chùa Maech Chhưm Meram Chrôi Tim Chăs">Chùa Maech Chhưm Meram Chrôi Tim Chăs</option>';
+            TnCha_options_str  += '<option value="Chùa Mengkol Thếp Pađây Bưng CroChápChắs">Chùa Mengkol Thếp Pađây Bưng CroChápChắs</option>';
+            TnCha_options_str  += '<option value="Chùa Muni Vongsa Ram Phnô Tà Niêl">Chùa Muni Vongsa Ram Phnô Tà Niêl</option>';
+            TnCha_options_str  += '<option value="Chùa Môni SathaRam ĐôlTru">Chùa Môni SathaRam ĐôlTru</option>';
+            TnCha_options_str  += '<option value="Chùa Môni Sră Keo">Chùa Môni Sră Keo</option>';
+            TnCha_options_str  += '<option value="Chùa Môni Sôphon Pong Tưk Chăs">Chùa Môni Sôphon Pong Tưk Chăs</option>';
+            TnCha_options_str  += '<option value="Chùa Môni Vongsa Prêk Tà Cuôl">Chùa Môni Vongsa Prêk Tà Cuôl</option>';
+            TnCha_options_str  += '<option value="Chùa MôniSakô ĐơmomPil">Chùa MôniSakô ĐơmomPil</option>';
+            TnCha_options_str  += '<option value="Chùa MônivongSa Sêrey vong ThomMaChô">Chùa MônivongSa Sêrey vong ThomMaChô</option>';
+            TnCha_options_str  += '<option value="Chùa Nô Rên Rengxây Ong Kho">Chùa Nô Rên Rengxây Ong Kho</option>';
+            TnCha_options_str  += '<option value="Chùa Om Pes Vanhnaram Đay Tà Suôs">Chùa Om Pes Vanhnaram Đay Tà Suôs</option>';
+            TnCha_options_str  += '<option value="Chùa Ponhlư Pô Thi Onhđét Phđốt">Chùa Ponhlư Pô Thi Onhđét Phđốt</option>';
+            TnCha_options_str  += '<option value="Chùa Pra Sath Kong">Chùa Pra Sath Kong</option>';
+            TnCha_options_str  += '<option value="Chùa Pres Buôl Pres Phek">Chùa Pres Buôl Pres Phek</option>';
+            TnCha_options_str  += '<option value="Chùa Pring Prum Monkol Om Pôp">Chùa Pring Prum Monkol Om Pôp</option>';
+            TnCha_options_str  += '<option value="Chùa Pro Chum Melchây Sêrây Chông Prêk">Chùa Pro Chum Melchây Sêrây Chông Prêk</option>';
+            TnCha_options_str  += '<option value="Chùa Pro Chum Vong Prêk Chac">Chùa Pro Chum Vong Prêk Chac</option>';
+            TnCha_options_str  += '<option value="Chùa Pro Chum Đel melchây Ong Tao">Chùa Pro Chum Đel melchây Ong Tao</option>';
+            TnCha_options_str  += '<option value="Chùa Pro Lean Melchây">Chùa Pro Lean Melchây</option>';
+            TnCha_options_str  += '<option value="Chùa Prum Vi Sal">Chùa Prum Vi Sal</option>';
+            TnCha_options_str  += '<option value="Chùa Puth Rengxây Bâng Kok">Chùa Puth Rengxây Bâng Kok</option>';
+            TnCha_options_str  += '<option value="Chùa PíchMenKôl">Chùa PíchMenKôl</option>';
+            TnCha_options_str  += '<option value="Chùa Pô Thi Khsách">Chùa Pô Thi Khsách</option>';
+            TnCha_options_str  += '<option value="Chùa Pô Thi Satha Ram">Chùa Pô Thi Satha Ram</option>';
+            TnCha_options_str  += '<option value="Chùa Pô Thi Sáth Chrôi Tưm Kal Đal">Chùa Pô Thi Sáth Chrôi Tưm Kal Đal</option>';
+            TnCha_options_str  += '<option value="Chùa Pô Thi Thlâng">Chùa Pô Thi Thlâng</option>';
+            TnCha_options_str  += '<option value="Chùa Pô Thi Thum Phđau Pênh">Chùa Pô Thi Thum Phđau Pênh</option>';
+            TnCha_options_str  += '<option value="Chùa Pôthi Kumphi Sakô Đon Ka Đôn">Chùa Pôthi Kumphi Sakô Đon Ka Đôn</option>';
+            TnCha_options_str  += '<option value="Chùa Pôthimengkôl Sêrey TaTeo">Chùa Pôthimengkôl Sêrey TaTeo</option>';
+            TnCha_options_str  += '<option value="Chùa Pấp Pe Vanhnaram Prêk Pinh Tôn">Chùa Pấp Pe Vanhnaram Prêk Pinh Tôn</option>';
+            TnCha_options_str  += '<option value="Chùa Rothtanas Môni Đay Niêl">Chùa Rothtanas Môni Đay Niêl</option>';
+            TnCha_options_str  += '<option value="Chùa Ríchthimônisakô ĐơmThnốt">Chùa Ríchthimônisakô ĐơmThnốt</option>';
+            TnCha_options_str  += '<option value="Chùa SalaPôthi Sêrey Sakô (Wáth Thmây)">Chùa SalaPôthi Sêrey Sakô (Wáth Thmây)</option>';
+            TnCha_options_str  += '<option value="Chùa Saravol ÔTedenh SuaSđây Bưng Kol">Chùa Saravol ÔTedenh SuaSđây Bưng Kol</option>';
+            TnCha_options_str  += '<option value="Chùa Srăs Sron Kompung Melchây Đay Chhơ Khmau">Chùa Srăs Sron Kompung Melchây Đay Chhơ Khmau</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey Cro Săng">Chùa Sêrey Cro Săng</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey KanDal">Chùa Sêrey KanDal</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey ProChumvongPres Kanđal TứkSap">Chùa Sêrey ProChumvongPres Kanđal TứkSap</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey ProchumBunh Sôvanhsakô ĐayTaPai">Chùa Sêrey ProchumBunh Sôvanhsakô ĐayTaPai</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey Rotanắsvong Bâng Tung">Chùa Sêrey Rotanắsvong Bâng Tung</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey Sakô Phnôthum">Chùa Sêrey Sakô Phnôthum</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey TaSếk">Chùa Sêrey TaSếk</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrey TaĐớk">Chùa Sêrey TaĐớk</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Bôpha Chăm Pa Chum">Chùa Sêrây Bôpha Chăm Pa Chum</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Chum Bâng Tôl Sa">Chùa Sêrây Chum Bâng Tôl Sa</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Muni SăngKes">Chùa Sêrây Muni SăngKes</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Môni Vong Peng Som Rách">Chùa Sêrây Môni Vong Peng Som Rách</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Nôcô Chum Om Pu Diar">Chùa Sêrây Nôcô Chum Om Pu Diar</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Pem Buôl Chăs (Srăs Sriêng)">Chùa Sêrây Pem Buôl Chăs (Srăs Sriêng)</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Phnô Rô Ka">Chùa Sêrây Phnô Rô Ka</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Prochum Vong Pem Buôl Thmây">Chùa Sêrây Prochum Vong Pem Buôl Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Prochum vong Trà Quít Thmây">Chùa Sêrây Prochum vong Trà Quít Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Pô Thi Prưk Tà Ong">Chùa Sêrây Pô Thi Prưk Tà Ong</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Pô Thi Đơm Pô">Chùa Sêrây Pô Thi Đơm Pô</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Pôthiwel Pô Pus Tưk">Chùa Sêrây Pôthiwel Pô Pus Tưk</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Sóckhum SongKum melchây Sro Lôn">Chùa Sêrây Sóckhum SongKum melchây Sro Lôn</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Ta Mơn">Chùa Sêrây Ta Mơn</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Têchô Ma Ha Túp">Chùa Sêrây Têchô Ma Ha Túp</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Utđom Phnô Kom Bôth">Chùa Sêrây Utđom Phnô Kom Bôth</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Utđom Pô Thi Chum">Chùa Sêrây Utđom Pô Thi Chum</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Utđom Đay Om Pu">Chùa Sêrây Utđom Đay Om Pu</option>';
+            TnCha_options_str  += '<option value="Chùa Sêrây Vong Phnô Canh Chơ Chăs">Chùa Sêrây Vong Phnô Canh Chơ Chăs</option>';
+            TnCha_options_str  += '<option value="Chùa Sôphol Rengsây Bưng CroCháp Thmây">Chùa Sôphol Rengsây Bưng CroCháp Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Sôs Thom Me Wach Tây Àrâyda Kom Pong Tróp">Chùa Sôs Thom Me Wach Tây Àrâyda Kom Pong Tróp</option>';
+            TnCha_options_str  += '<option value="Chùa Tak Khi Na Von Pô Thi Prưk">Chùa Tak Khi Na Von Pô Thi Prưk</option>';
+            TnCha_options_str  += '<option value="Chùa Tếp Pia Ram PrâyChop">Chùa Tếp Pia Ram PrâyChop</option>';
+            TnCha_options_str  += '<option value="Chùa Utđom Môni Phnô Canh Chơ Thmây">Chùa Utđom Môni Phnô Canh Chơ Thmây</option>';
+            TnCha_options_str  += '<option value="Chùa Vi Thde Ram Trà Quít Chăs">Chùa Vi Thde Ram Trà Quít Chăs</option>';
+            TnCha_options_str  += '<option value="Chùa Wis Thde Ponhnaram Bâng Kha Don">Chùa Wis Thde Ponhnaram Bâng Kha Don</option>';
+            TnCha_options_str  += '<option value="Chùa Wiêl Lvon Naram On Đôn Rưs Sây">Chùa Wiêl Lvon Naram On Đôn Rưs Sây</option>';
+            TnCha_options_str  += '<option value="Chùa ÔChum Maram Prêk Chêk">Chùa ÔChum Maram Prêk Chêk</option>';
+            TnCha_options_str  += '<option value="Sôvanh Kongke Muni Kos Tung">Sôvanh Kongke Muni Kos Tung</option>';
+            sel_TnCha.innerHTML = TnCha_options_str;
+            div_TnCha.appendChild(sel_TnCha);
+            var lab_TnCha = document.createElement('div');
+            lab_TnCha.innerHTML = 'Tên Chùa';
+            lab_TnCha.className = 'filterlabel';
+            div_TnCha.appendChild(lab_TnCha);
+            var reset_TnCha = document.createElement('div');
+            reset_TnCha.innerHTML = 'clear filter';
+            reset_TnCha.className = 'filterlabel';
+            reset_TnCha.onclick = function() {
+                var options = document.getElementById("sel_TnCha").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_TnCha.appendChild(reset_TnCha);
+        resetLabels([layer_lopvung_1]);
+        map.on("zoomend", function(){
+            resetLabels([layer_lopvung_1]);
+        });
+        map.on("layeradd", function(){
+            resetLabels([layer_lopvung_1]);
+        });
+        map.on("layerremove", function(){
+            resetLabels([layer_lopvung_1]);
+        });
+        </script>
+    </body>
+</html>
